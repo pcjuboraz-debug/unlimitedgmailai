@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Premium Account Creator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+    :root {
+      --primary-color: #4285F4;
+      --success-color: #34A853;
+      --warning-color: #FBBC05;
+      --danger-color: #EA4335;
+      --bg-dark: #070b14;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --glass-blur: blur(15px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #fff;
+      font-family: 'Google Sans', sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* ---- animated background grid ---- */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    /* Welcome Screen */
+    #welcomeScreen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      transition: opacity 0.8s ease-out;
+    }
+
+    .welcome-brand {
+      position: relative;
+    }
+
+    .welcome-brand .glitch-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      color: var(--primary-color);
+      opacity: 0;
+      font-family: monospace;
+    }
+
+    .loader-circle {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #1a1a1a;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Globally Fixed Demo Button */
+    .demo-view-btn {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: var(--card-bg);
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: var(--glass-blur);
+      z-index: 10005;
+      transition: 0.3s;
+      color: #fff;
+      display: none;
+    }
+
+    .demo-view-btn:hover {
+      background: var(--primary-color);
+    }
+
+    /* Containers */
+    #selectionGate,
+    #langSelection {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.85);
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .auth-card {
+      background: var(--card-bg);
+      padding: 30px 20px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      max-width: 440px;
+      width: 92%;
+      backdrop-filter: var(--glass-blur);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: cardFloat 0.5s ease-out;
+    }
+
+    @keyframes cardFloat {
+      0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .option-btn {
+      width: 100%;
+      padding: 16px;
+      margin: 10px 0;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn:hover {
+      background: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    /* ripple effect on buttons */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(0);
+      animation: rippleAnim 0.6s ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes rippleAnim {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    .payment-instruction {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 15px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .payment-instruction h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      text-align: center;
+      color: var(--warning-color);
+    }
+
+    /* Rules Icon */
+    @keyframes glow {
+      50% {
+        box-shadow: 0 0 15px var(--warning-color);
+        transform: scale(1.1);
+      }
+    }
+
+    .glowing-info {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--bg-dark);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      cursor: pointer;
+      border: 2px solid var(--primary-color);
+      animation: glow 2s infinite ease-in-out;
+      z-index: 999;
+      display: none;
+    }
+
+    /* rules modal overlay */
+    #rulesOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10000;
+      display: none;
+      backdrop-filter: blur(4px);
+    }
+
+    #rulesModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: #0f172a;
+      padding: 25px;
+      border-radius: 20px;
+      z-index: 10001;
+      width: 85%;
+      max-width: 400px;
+      display: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: 0.3s;
+    }
+
+    #rulesModal.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #rulesModal li {
+      margin-bottom: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #cbd5e1;
+      display: flex;
+      gap: 10px;
+      text-align: left;
+    }
+
+    header {
+      width: 100%;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(7, 11, 20, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 10;
+    }
+
+    /* status bar below header */
+    #statusBar {
+      width: 100%;
+      padding: 6px 20px;
+      display: flex;
+      gap: 18px;
+      background: rgba(7, 11, 20, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 10px;
+      color: #64748b;
+      font-family: monospace;
+      position: relative;
+      z-index: 10;
+      display: none;
+      flex-wrap: wrap;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.green {
+      background: var(--success-color);
+      box-shadow: 0 0 6px var(--success-color);
+    }
+
+    .status-dot.yellow {
+      background: var(--warning-color);
+      box-shadow: 0 0 6px var(--warning-color);
+    }
+
+    .container {
+      width: 92%;
+      max-width: 600px;
+      padding: 30px 0;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #4285F4, #34A853, #FBBC05, #EA4335);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #111827;
+      color: white;
+      text-align: center;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 12px rgba(66, 133, 244, 0.2);
+    }
+
+    .account-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 25px;
+      margin-top: 20px;
+      display: none;
+      animation: cardFloat 0.4s ease-out;
+    }
+
+    .data-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      background: #111827;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--primary-color);
+    }
+
+    .value {
+      color: #fff;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 16px;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+      padding: 16px 30px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* toast */
+    #toast {
+      visibility: hidden;
+      min-width: 220px;
+      background-color: var(--success-color);
+      color: #fff;
+      text-align: center;
+      border-radius: 10px;
+      padding: 15px;
+      position: fixed;
+      z-index: 10002;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.4s, fadeout 0.4s 2.6s;
+    }
+
+    #toast.error {
+      background-color: var(--danger-color);
+    }
+
+    @keyframes fadein {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes fadeout {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+
+    /* glitch text utility */
+    .glitch-text {
+      display: inline-block;
+      font-family: monospace;
+    }
+
+    </style>
+  </head>
+
+  <body>
+
+    <!-- animated canvas background -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div id="welcomeScreen">
+      <div class="welcome-brand">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" width="90">
+      </div>
+      <div class="loader-circle" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="demo-view-btn" id="globalDemoBtn" onclick="enterDemo()">👁️ Demo View</div>
+
+    <div id="langSelection">
+      <div class="auth-card">
+        <h2 style="margin-bottom: 20px;">Select Language / ভাষা নির্বাচন করুন</h2>
+        <button class="option-btn" onclick="setLanguage('en')">English</button>
+        <button class="option-btn" onclick="setLanguage('bn')">বাংলা</button>
+      </div>
+    </div>
+
+    <div id="selectionGate" style="display: none;">
+      <div class="auth-card" id="mainChoice">
+        <h2 id="txt_premium_access">Premium Access</h2>
+        <button class="option-btn" onclick="showKeyArea()" id="txt_enter_key">🔐 Enter License Key</button>
+        <button class="option-btn" style="border-color: var(--warning-color);" onclick="showPaymentArea()" id="txt_buy_key">🛒 Buy License Key</button>
+      </div>
+
+      <div class="auth-card" id="keyInputArea" style="display: none;">
+        <h3 id="txt_activation">Activation</h3>
+        <input type="text" id="licenseInput" placeholder="Enter License Key">
+        <button class="btn-primary" onclick="verifyKey()" id="txt_verify_btn">Activate</button>
+        <p id="errorMsg" style="color: var(--danger-color); font-size: 12px; margin-top: 10px;"></p>
+        <p onclick="showMainChoice()" style="color:#94a3b8; font-size:13px; margin-top:15px; text-decoration:underline; cursor:pointer;" id="txt_back_key">Go Back</p>
+      </div>
+
+      <div class="auth-card" id="paymentArea" style="display: none;">
+        <h3 id="txt_payment_title">Select Method</h3>
+        <div id="methodSelector" style="display: grid; gap: 10px; margin: 15px 0;">
+          <button class="option-btn" onclick="selectMethod('nagad')">NAGAD</button>
+          <button class="option-btn" onclick="selectMethod('rocket')">ROCKET</button>
+          <button class="option-btn" onclick="selectMethod('binance')">BINANCE</button>
+          <button class="option-btn" style="border-color: var(--success-color);" onclick="selectMethod('other')">Other Payment Method</button>
+        </div>
+
+        <div id="methodDetails" style="display: none;">
+          <div id="nagadRocketInst" style="display:none;" class="payment-instruction">
+            <h3 id="txt_pay_head_nr">💳 Nagad/Rocket Payment</h3>
+            <p id="txt_pay_desc_nr">Select the payment method to buy the License Key.</p>
+            <p>🔑 <span id="txt_price_nr">Lifetime License Key Price:</span> <b>880 BDT</b></p>
+            <p>💰 <span id="txt_amt_nr">Send Money Amount:</span> <b>880 BDT</b></p>
+            <p>📱 <span id="txt_num_nr">Payment Number:</span> <b>01918615474</b></p>
+            <hr style="opacity:0.1; margin:10px 0;">
+            <p><b id="txt_warn_head_nr">⚠️ Important:</b> Only use Send Money and save your Txn ID.</p>
+          </div>
+
+          <div id="binanceInst" style="display:none;" class="payment-instruction">
+            <h3 id="txt_pay_head_bn">🟡 Binance Payment</h3>
+            <p id="txt_pay_desc_bn">Pay 11 USDT for the Lifetime License Key.</p>
+            <p>🧾 <span id="txt_order_info_bn">Order Info:</span> <b>11 USDT</b></p>
+            <p>🆔 <b>Binance UID: 995854857</b></p>
+          </div>
+
+          <div id="otherInst" style="display:none;" class="payment-instruction">
+            <h3 style="color: var(--success-color); text-align: center;">💬 Other Payment Method</h3>
+            <p style="text-align: center; font-size: 14px; line-height: 1.8;">
+              For any payment-related issues, please contact us directly on<br>
+              <b>Telegram</b>.<br><br>
+              👇 <b>Click the button below</b> 👇
+            </p>
+            <a href="https://t.me/OwnerJisan_trader" target="_blank" class="btn-primary" style="display:block; text-decoration:none; margin-top:10px; font-size:14px; text-align: center; background: #0088cc;">✈️ Contact Us on Telegram</a>
+            <p style="text-align: center; margin-top: 12px; font-size: 12px; color: #94a3b8;">
+              Telegram: <b style="color: #fff;">t.me/OwnerJisan_trader</b>
+            </p>
+          </div>
+
+          <p id="txt_tx_label" style="text-align:left; font-size:12px; color:#94a3b8; margin-top:10px;">Enter Transaction ID:</p>
+          <input type="text" id="txId" placeholder="Transaction ID">
+          <a href="https://t.me/OwnerJisan_trader" target="_blank" class="btn-primary" style="display:block; text-decoration:none; margin-top:10px; font-size:14px;" id="txt_contact_admin">Send to Admin</a>
+          <p onclick="resetPaySelection()" style="color:var(--primary-color); font-size:12px; margin-top:15px; cursor:pointer; text-decoration:underline;" id="txt_change_method">Change Method</p>
+        </div>
+        <p onclick="showMainChoice()" style="color:#94a3b8; font-size:13px; margin-top:15px; text-decoration:underline; cursor:pointer;" id="txt_back_pay">Go Back</p>
+      </div>
+    </div>
+
+    <div class="glowing-info" id="rulesIcon" onclick="openRules()">ℹ️</div>
+
+    <!-- rules overlay & modal -->
+    <div id="rulesOverlay" onclick="closeRules()"></div>
+    <div id="rulesModal">
+      <h3 id="txt_rules_title">System Rules</h3>
+      <ul id="rulesList"></ul>
+      <button class="btn-primary" style="margin-top: 15px;" onclick="closeRules()" id="txt_accept_rules">I Accept</button>
+    </div>
+
+    <header id="appHeader" style="display:none;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" width="80">
+      <div style="font-size: 11px; color: #94a3b8;">
+        Mode: <span id="modeText" style="color: var(--danger-color); font-weight: bold;">Demo View</span>
+      </div>
+    </header>
+
+    <!-- status bar -->
+    <div id="statusBar">
+      <span class="status-item"><span class="status-dot green"></span> System Secure</span>
+      <span class="status-item"><span class="status-dot green"></span> API Connected</span>
+      <span class="status-item"><span class="status-dot yellow"></span> Rate Limit: 30s</span>
+      <span class="status-item" id="statusTime">00:00:00</span>
+    </div>
+
+    <div class="container" id="mainApp" style="display:none;">
+      <h1 id="txt_app_title">Account Creator</h1>
+      <button id="genBtn" class="btn-primary" style="width: auto; padding: 14px 40px; margin-top: 20px;" onclick="generate()">Start Generation</button>
+
+      <div id="loaderArea" style="display: none; margin-top: 30px;">
+        <p style="font-size: 12px; color: var(--primary-color); font-family: monospace;" id="txt_loader">Processing API...</p>
+        <div style="width: 100%; background: #1a1a1a; height: 4px; border-radius: 10px; overflow: hidden; margin-top: 10px;">
+          <div id="progress" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--success-color)); border-radius: 10px;"></div>
+        </div>
+      </div>
+
+      <div class="account-card" id="resultCard">
+        <div class="data-row">
+          <p style="font-size: 10px; color: #94a3b8;" id="txt_email_label">EMAIL ADDRESS</p>
+          <p class="value" id="resEmail"></p>
+        </div>
+        <div class="data-row">
+          <p style="font-size: 10px; color: #94a3b8;" id="txt_pass_label">PASSWORD <span id="lockIcon">🔐</span></p>
+          <p class="value" id="resPass"></p>
+        </div>
+        <button class="btn-primary" id="copyBtn" style="font-size: 14px; padding: 12px;">Copy Account</button>
+      </div>
+    </div>
+
+    <div id="toast">Copied!</div>
+
+    <script>
+    const KEY = "AFXT-662-IIOPE";
+    let isPremium = false;
+    let clickCount = 0;
+    let lastGenTime = 0;
+    const COOLDOWN = 30000;
+    let currentLang = 'en';
+
+    const langData = {
+      en: {
+        demo_btn: "👁️ Demo View",
+        premium_access: "Premium Access",
+        enter_key: "🔐 Enter License Key",
+        buy_key: "🛒 Buy License Key",
+        activation: "Activation",
+        verify_btn: "Activate",
+        back: "Go Back",
+        payment_title: "Select Method",
+        contact_admin: "Send to Admin",
+        change_method: "Change Method",
+        pay_head_nr: "💳 Nagad/Rocket Payment",
+        pay_desc_nr: "Select the payment method to buy the License Key.",
+        price_nr: "Lifetime License Key Price:",
+        amt_nr: "Send Money Amount:",
+        num_nr: "Payment Number:",
+        warn_head_nr: "⚠️ Important:",
+        tx_label: "Enter Transaction ID:",
+        pay_head_bn: "🟡 Binance Payment",
+        pay_desc_bn: "Pay 11 USDT for the Lifetime License Key.",
+        order_info_bn: "Order Info:",
+        demo_mode: "Demo",
+        premium_mode: "Premium",
+        rules_title: "⚠️ System Rules",
+        accept_rules: "I Accept",
+        app_title: "Account Creator",
+        start_gen: "Start Generation",
+        loader: "Bypassing Security...",
+        email_label: "GENERATED EMAIL",
+        pass_label: "PASSWORD",
+        copy_btn: "Copy Account Data",
+        unlock_btn: "Unlock (Buy Key)",
+        cooldown_msg: "Wait {s}s...",
+        limit_msg: "Daily limit reached (15/day)",
+        error_key: "Invalid Key!",
+        copy_success: "Copied!",
+        rules: ["2 devices permitted.", "VPN/Proxy prohibited.", "Do not share passwords.", "30s interval required.", "Follow rules for lifetime usage.", "AI will ban if rules broken."]
+      },
+      bn: {
+        demo_btn: "👁️ ডেমো ভার্সন",
+        premium_access: "প্রিমিয়াম অ্যাক্সেস",
+        enter_key: "🔐 লাইসেন্স কি দিন",
+        buy_key: "🛒 লাইসেন্স কি কিনুন",
+        activation: "অ্যাক্টিভেশন",
+        verify_btn: "অ্যাক্টিভেট করুন",
+        back: "পিছনে যান",
+        payment_title: "পেমেন্ট মাধ্যম বেছে নিন",
+        contact_admin: "এডমিনকে সেন্ড করুন",
+        change_method: "মাধ্যম পরিবর্তন করুন",
+        pay_head_nr: "💳 পেমেন্ট পদ্ধতি নগদ/রকেট এর ক্ষেত্রে",
+        pay_desc_nr: "লাইসেন্স কী কেনার জন্য মাধ্যম নির্বাচন করুন।",
+        price_nr: "লাইফটাইম লাইসেন্স কী মূল্য:",
+        amt_nr: "Send Money পরিমাণ:",
+        num_nr: "পেমেন্ট নম্বর:",
+        warn_head_nr: "⚠️ গুরুত্বপূর্ণ:",
+        tx_label: "নিচে আপনার ট্রানজেকশন আইডি দিন:",
+        pay_head_bn: "🟡 Binance পেমেন্ট ক্ষেত্রে",
+        pay_desc_bn: "লাইফটাইম কী এর জন্য 11 USDT পেমেন্ট করুন।",
+        order_info_bn: "অর্ডার তথ্য:",
+        demo_mode: "ডেমো",
+        premium_mode: "প্রিমিয়াম",
+        rules_title: "⚠️ সিস্টেমের নিয়মাবলী",
+        accept_rules: "আমি নিয়ম মেনে চলব",
+        app_title: "অ্যাকাউন্ট ক্রিয়েটর",
+        start_gen: "অ্যাকাউন্ট তৈরি শুরু করুন",
+        loader: "সিকিউরিটি বাইপাস হচ্ছে...",
+        email_label: "তৈরিকৃত জিমেইল",
+        pass_label: "পাসওয়ার্ড",
+        copy_btn: "অ্যাকাউন্ট কপি করুন",
+        unlock_btn: "আনলক করুন (কি কিনুন)",
+        cooldown_msg: "{s} সেকেন্ড অপেক্ষা করুন...",
+        limit_msg: "দৈনিক লিমিট শেষ (১৫টি)",
+        error_key: "ভুল লাইসেন্স কি!",
+        copy_success: "কপি করা হয়েছে!",
+        rules: ["একই কি দিয়ে ২ টি ডিভাইস ব্যবহার করা যাবে।", "ভিপিএন বা প্রক্সি ব্যবহার করা নিষিদ্ধ।", "আপনার পাসওয়ার্ড শেয়ার করবেন না।", "প্রতি অ্যাকাউন্ট তৈরিতে ৩০ সেকেন্ড বিরতি দিন।", "নিয়ম মানলে অ্যাকাউন্ট আজীবন ঠিক থাকবে।", "নিয়ম ভঙ্গ করলে AI আপনাকে ব্যান করে দিবে।"]
+      }
+    };
+
+    // ─── animated canvas background ───
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+
+    function resizeCanvas() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // draw a subtle dot grid that drifts slowly
+    function drawBg(time) {
+      ctx.clearRect(0, 0, w, h);
+      const spacing = 40;
+      const offsetX = (time * 0.02) % spacing;
+      const offsetY = (time * 0.015) % spacing;
+      ctx.fillStyle = 'rgba(66, 133, 244, 0.12)';
+      for (let x = offsetX - spacing; x < w + spacing; x += spacing) {
+        for (let y = offsetY - spacing; y < h + spacing; y += spacing) {
+          ctx.beginPath();
+          ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // occasional larger dots
+      ctx.fillStyle = 'rgba(52, 168, 83, 0.08)';
+      for (let x = offsetX * 0.7; x < w; x += spacing * 2.5) {
+        for (let y = offsetY * 0.7; y < h; y += spacing * 2.5) {
+          ctx.beginPath();
+          ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(drawBg);
+    }
+    requestAnimationFrame(drawBg);
+
+    // ─── ripple effect on all buttons ───
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.option-btn, .btn-primary');
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const r = document.createElement('span');
+      r.className = 'ripple';
+      const size = Math.max(rect.width, rect.height);
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      r.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      btn.appendChild(r);
+      setTimeout(() => r.remove(), 600);
+    });
+
+    window.onload = () => {
+      setTimeout(() => {
+        document.getElementById("welcomeScreen").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("welcomeScreen").style.display = "none";
+          document.getElementById("globalDemoBtn").style.display = "flex";
+        }, 800);
+      }, 1500);
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      updateTextContent();
+      document.getElementById("langSelection").style.display = "none";
+      document.getElementById("selectionGate").style.display = "flex";
+    }
+
+    function updateTextContent() {
+      const d = langData[currentLang];
+      document.getElementById("globalDemoBtn").innerText = d.demo_btn;
+      document.getElementById("txt_premium_access").innerText = d.premium_access;
+      document.getElementById("txt_enter_key").innerText = d.enter_key;
+      document.getElementById("txt_buy_key").innerText = d.buy_key;
+      document.getElementById("txt_activation").innerText = d.activation;
+      document.getElementById("txt_verify_btn").innerText = d.verify_btn;
+      document.getElementById("txt_back_key").innerText = d.back;
+      document.getElementById("txt_back_pay").innerText = d.back;
+      document.getElementById("txt_payment_title").innerText = d.payment_title;
+      document.getElementById("txt_contact_admin").innerText = d.contact_admin;
+      document.getElementById("txt_change_method").innerText = d.change_method;
+      document.getElementById("txt_pay_head_nr").innerText = d.pay_head_nr;
+      document.getElementById("txt_pay_desc_nr").innerText = d.pay_desc_nr;
+      document.getElementById("txt_price_nr").innerText = d.price_nr;
+      document.getElementById("txt_amt_nr").innerText = d.amt_nr;
+      document.getElementById("txt_num_nr").innerText = d.num_nr;
+      document.getElementById("txt_warn_head_nr").innerText = d.warn_head_nr;
+      document.getElementById("txt_pay_head_bn").innerText = d.pay_head_bn;
+      document.getElementById("txt_pay_desc_bn").innerText = d.pay_desc_bn;
+      document.getElementById("txt_order_info_bn").innerText = d.order_info_bn;
+      document.getElementById("txt_tx_label").innerText = d.tx_label;
+      document.getElementById("txt_rules_title").innerText = d.rules_title;
+      document.getElementById("txt_accept_rules").innerText = d.accept_rules;
+      document.getElementById("txt_app_title").innerText = d.app_title;
+      document.getElementById("genBtn").innerText = d.start_gen;
+      document.getElementById("txt_loader").innerText = d.loader;
+      document.getElementById("txt_email_label").innerText = d.email_label;
+      document.getElementById("txt_pass_label").innerHTML = d.pass_label + ' <span id="lockIcon">🔐</span>';
+      const rList = document.getElementById("rulesList");
+      rList.innerHTML = "";
+      d.rules.forEach(r => {
+        rList.innerHTML += `<li>• ${r}</li>`;
+      });
+    }
+
+    function showKeyArea() {
+      document.getElementById("mainChoice").style.display = "none";
+      document.getElementById("keyInputArea").style.display = "block";
+    }
+
+    function showPaymentArea() {
+      document.getElementById("mainChoice").style.display = "none";
+      document.getElementById("paymentArea").style.display = "block";
+      resetPaySelection();
+    }
+
+    function showMainChoice() {
+      document.getElementById("keyInputArea").style.display = "none";
+      document.getElementById("paymentArea").style.display = "none";
+      document.getElementById("mainChoice").style.display = "block";
+    }
+
+    function selectMethod(m) {
+      document.getElementById("methodSelector").style.display = "none";
+      document.getElementById("methodDetails").style.display = "block";
+      document.getElementById("nagadRocketInst").style.display = (m === 'nagad' || m === 'rocket') ? "block" : "none";
+      document.getElementById("binanceInst").style.display = (m === 'binance') ? "block" : "none";
+      document.getElementById("otherInst").style.display = (m === 'other') ? "block" : "none";
+    }
+
+    function resetPaySelection() {
+      document.getElementById("methodSelector").style.display = "grid";
+      document.getElementById("methodDetails").style.display = "none";
+    }
+
+    function verifyKey() {
+      if (document.getElementById("licenseInput").value === KEY) {
+        isPremium = true;
+        document.getElementById("selectionGate").style.display = "none";
+        document.getElementById("langSelection").style.display = "none";
+        document.getElementById("appHeader").style.display = "flex";
+        document.getElementById("statusBar").style.display = "flex";
+        document.getElementById("mainApp").style.display = "block";
+        document.getElementById("rulesIcon").style.display = "flex";
+        document.getElementById("globalDemoBtn").style.display = "none";
+        document.getElementById("modeText").innerText = currentLang === 'en' ? langData.en.premium_mode : langData.bn.premium_mode;
+        document.getElementById("modeText").style.color = "var(--success-color)";
+      } else {
+        document.getElementById("errorMsg").innerText = langData[currentLang].error_key;
+      }
+    }
+
+    function enterDemo() {
+      updateTextContent();
+      document.getElementById("selectionGate").style.display = "none";
+      document.getElementById("langSelection").style.display = "none";
+      document.getElementById("appHeader").style.display = "flex";
+      document.getElementById("statusBar").style.display = "flex";
+      document.getElementById("mainApp").style.display = "block";
+      document.getElementById("rulesIcon").style.display = "flex";
+      document.getElementById("modeText").innerText = currentLang === 'en' ? langData.en.demo_mode : langData.bn.demo_mode;
+      document.getElementById("modeText").style.color = "var(--danger-color)";
+    }
+
+    function openRules() {
+      document.getElementById("rulesOverlay").style.display = "block";
+      document.getElementById("rulesModal").style.display = "block";
+      setTimeout(() => document.getElementById("rulesModal").classList.add('show'), 10);
+    }
+
+    function closeRules() {
+      document.getElementById("rulesModal").classList.remove('show');
+      setTimeout(() => {
+        document.getElementById("rulesModal").style.display = "none";
+        document.getElementById("rulesOverlay").style.display = "none";
+      }, 300);
+    }
+
+    // ─── status bar clock ───
+    function updateStatusTime() {
+      const d = new Date();
+      document.getElementById('statusTime').textContent =
+        d.toTimeString().split(' ')[0];
+    }
+    setInterval(updateStatusTime, 1000);
+    updateStatusTime();
+
+    function generate() {
+      const now = Date.now();
+      if (now - lastGenTime < COOLDOWN) {
+        const rem = Math.ceil((COOLDOWN - (now - lastGenTime)) / 1000);
+        showToast(langData[currentLang].cooldown_msg.replace("{s}", rem), true);
+        return;
+      }
+      if (clickCount >= 15) {
+        showToast(langData[currentLang].limit_msg, true);
+        return;
+      }
+      clickCount++;
+      lastGenTime = Date.now();
+      document.getElementById("loaderArea").style.display = "block";
+      document.getElementById("resultCard").style.display = "none";
+      document.getElementById("genBtn").disabled = true;
+      let p = 0;
+      const intv = setInterval(() => {
+        p += 2;
+        document.getElementById("progress").style.width = p + "%";
+        if (p >= 100) {
+          clearInterval(intv);
+          document.getElementById("loaderArea").style.display = "none";
+          document.getElementById("genBtn").disabled = false;
+          showResult();
+        }
+      }, 100);
+    }
+
+    function showResult() {
+      let email, pass;
+      // 1st click → fixed account
+      if (clickCount === 1) {
+        email = "sujontamuk5856@gmail.com";
+        pass = "Skitud747";
+      } else {
+        const n = ["user", "pro", "cloud", "alpha", "gen", "nexus", "smart", "fast"];
+        email = n[Math.floor(Math.random() * n.length)] + Math.floor(Math.random() * 99999) + "@gmail.com";
+        pass = Math.random().toString(36).substring(2, 11).toUpperCase() + "@" + Math.floor(Math.random() * 99);
+      }
+      document.getElementById("resEmail").innerText = email;
+      const pEl = document.getElementById("resPass");
+      const cBtn = document.getElementById("copyBtn");
+      if (isPremium) {
+        pEl.innerText = pass;
+        pEl.style.color = "#fff";
+        document.getElementById("lockIcon").style.display = "none";
+        cBtn.innerText = langData[currentLang].copy_btn;
+        cBtn.onclick = () => {
+          navigator.clipboard.writeText(`Email: ${email}\nPassword: ${pass}`);
+          showToast(langData[currentLang].copy_success, false);
+        };
+      } else {
+        pEl.innerText = "********";
+        pEl.style.color = "var(--danger-color)";
+        cBtn.innerText = langData[currentLang].unlock_btn;
+        cBtn.onclick = () => location.reload();
+      }
+      document.getElementById("resultCard").style.display = "block";
+    }
+
+    function showToast(msg, isError) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.className = isError ? "show error" : "show";
+      setTimeout(() => t.className = "", 3000);
+    }
+
+    </script>
+  </body>
+
+</html>
